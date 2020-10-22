@@ -8,7 +8,6 @@
     if (t.length > 0) {
       images = await t;
     }
-    await console.log(images[0]);
   };
 
   const dataToFile = (data: DataTransferItem): Promise<File> =>

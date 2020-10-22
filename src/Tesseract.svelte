@@ -2,10 +2,18 @@
   // Prevent the default paste action, don't need for images i think
   // e.preventDefault();
 
-  // const 
+  // const
+
+  Tesseract.recognize(
+    'https://tesseract.projectnaptha.com/img/eng_bw.png',
+    'eng',
+    { logger: (m) => console.log(m) }
+  ).then(({ data: { text } }) => {
+    console.log(text);
+  });
 </script>
 
-<!-- <style lang="scss">
+<!--<style lang="scss">
   // main {
   //   text-align: center;
   //   max-width: 240px;
@@ -26,7 +34,7 @@
       max-width: none;
     }
   }
-</style> -->
+</style>-->
 
 <svelte:head>
   <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js">
