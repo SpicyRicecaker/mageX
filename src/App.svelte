@@ -1,38 +1,48 @@
 <script lang="ts">
-  let pastedImageSrc = '';
-  const handleImagePaste = (e: ClipboardEvent) => {
+  import Tesseract from './Tesseract.svelte';
+
+  let images: string[] = [];
+  const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
+    const t = await getClipboardImageSources(e.clipboardData.items);
+    if (t.length > 0) {
+      images = await t;
+    }
+    await console.log(images[0]);
+  };
 
-    // Focus on first item in the clipboard
-    const item = e.clipboardData.items[0];
-    console.log(item);
+  const dataToFile = (data: DataTransferItem): Promise<File> =>
+    Promise.resolve(data.getAsFile());
 
-    // Then determine if the image is on top?
-    switch (item.type.split('/')[0]) {
-      case 'text': {
-        console.log('text');
-        // Get the blob of the image
-        // const blob = await item.getAsFile();
-        // console.log(await blob, '123');
-        break;
-      }
-      case 'image': {
-        console.log('image');
-        // Get the blob of the image
-        const blob = item.getAsFile();
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          pastedImageSrc = e.target.result as string;
-        };
-        reader.readAsDataURL(blob);
-        break;
-      }
-      default: {
-        console.log('you pasted not an image lol');
-        break;
+  const getClipboardImageSources = async (
+    clipboardImages: DataTransferItemList
+  ): Promise<string[]> => {
+    const tempImageSources: string[] = [];
+    for (let i = 0; i < clipboardImages.length; i++) {
+      if (clipboardImages[i].type.match(/image/)) {
+        tempImageSources.push(
+          await fileToText(await dataToFile(clipboardImages[i]))
+        );
       }
     }
+    return tempImageSources;
   };
+
+  const fileToText = (file: File): Promise<string> => {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onerror = () => {
+        reader.abort();
+        reject('error gg ffs');
+      };
+
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Prevent the default paste action, don't need for images i think
   // e.preventDefault();
 </script>
@@ -64,7 +74,7 @@
     height: 100%;
   }
 
-  #image-actual {
+  .image-actual {
     max-width: 100%;
     max-height: 100%;
   }
@@ -79,10 +89,10 @@
 <main on:paste={handleImagePaste}>
   <div class="wrapper">
     <div class="container-image">
-      <img
-        id="image-actual"
-        src={pastedImageSrc}
-        alt="your-pasted-stuff-here" />
+      {#each images as image, i}
+        <img class="image-actual" src={image} alt="pasted clipboard item {i}" />
+      {/each}
     </div>
   </div>
+  <Tesseract />
 </main>
