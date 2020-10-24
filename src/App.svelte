@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Tesseract from './Tesseract.svelte';
+  import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
 
   let images: string[] = [];
   const handleImagePaste = async (e: ClipboardEvent) => {
@@ -7,6 +7,7 @@
     const t = await getClipboardImageSources(e.clipboardData.items);
     if (t.length > 0) {
       images = await t;
+      await tesseractRecognize(images);
     }
   };
 
