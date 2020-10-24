@@ -94,5 +94,5 @@
       {/each}
     </div>
   </div>
-  <Tesseract />
+  <Tesseract/>
 </main>
