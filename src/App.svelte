@@ -1,23 +1,29 @@
 <script lang="ts">
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
+  import { ready } from './stores.js';
   import Progress from './Progress.svelte';
   import Loader from './Loader.svelte';
   import Square from './Square.svelte';
+  import Options from './Options.svelte';
+  import ProcessImage from './ProcessImage.svelte';
 
+  let processImageComponent;
   const work = {
     status: 'none',
     progress: 0,
   };
 
-  let ready = false;
   let images: string[] = [];
   let ocrdImages: any;
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
-    const t = await getClipboardImageSources(e.clipboardData.items);
-    if (t.length > 0) {
-      images = await t;
-      ocrdImages = tesseractRecognize(images);
+    const raw = await getClipboardImageSources(e.clipboardData.items);
+    if (raw.length > 0) {
+      // We can update images with the link
+      images = await raw;
+      // However, we want to preprocess the image if needed
+      const processed = await processImageComponent.processImageAll(raw);
+      ocrdImages = tesseractRecognize(processed);
     }
   };
 
@@ -30,6 +36,10 @@
     const tempImageSources: string[] = [];
     for (let i = 0; i < clipboardImages.length; i++) {
       if (clipboardImages[i].type.match(/image/)) {
+        // from clipboard format into file
+        // const imageFile = await dataToFile(clipboardImages[i]);
+        // form file into base 64 i think
+        // const imageText = await fileToText(imageFile);
         tempImageSources.push(
           await fileToText(await dataToFile(clipboardImages[i]))
         );
@@ -87,7 +97,7 @@
 
 <main on:paste={handleImagePaste}>
   <div class="wrapper">
-    {#if !ready}
+    {#if !$ready}
       <Loader bind:message={work.status} />
     {/if}
     {#each images as image, i}
@@ -95,16 +105,17 @@
       {#await ocrdImages}
         <Progress bind:status={work.status} bind:progress={work.progress} />
       {:then ocrdImage}
-        <Square ocrdImage={ocrdImage[i]} />
+        <!-- <Square ocrdImage={ocrdImage[i]} /> -->
       {:catch error}
         <div>Decent{error}</div>
       {/await}
     {/each}
   </div>
   <Tesseract
-    bind:ready
     on:work={(event) => {
       work.status = event.detail.status;
       work.progress = event.detail.progress;
     }} />
 </main>
+<Options />
+<ProcessImage bind:this={processImageComponent} />

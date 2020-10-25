@@ -15,14 +15,12 @@
   export const killTesseractWorkers = async () => {
     await worker.terminate();
   };
-  
 </script>
 
 <script>
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
-  import { lang } from './stores.js';
-  export let ready = false;
+  import { lang, ready } from './stores.js';
 
   // DEBUG
   // import { onMount } from 'svelte';
@@ -49,12 +47,12 @@
     await worker.load();
     await worker.loadLanguage($lang);
     await worker.initialize($lang);
-    ready = await true;
+    await ready.set(true);
   };
   export const changeWrokerLang = async () => {
     await worker.terminate();
     await spawnTesseractWorkers();
-    ready = false;
+    await ready.set(false);
   };
 </script>
 
