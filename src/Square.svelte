@@ -16,7 +16,7 @@
   }
   export let ocrdImage: hocrType;
   // debug
-  console.log(ocrdImage);
+  // console.log(ocrdImage);
 </script>
 
 <style lang="scss">

@@ -15,22 +15,16 @@
 
   // Takes in an image source, does some processing on it, and then returns the resulting image source
   export const processImage = async (raw: string): Promise<string> => {
-    console.log(raw);
     const rawImage = await createImage(raw);
     // Onload we can do canvas stuff
     // Set canvas width and height
-    console.log(await rawImage);
-    canvas.width = (await rawImage).naturalWidth;
-    console.log('works');
-    canvas.height = (await rawImage).naturalHeight;
+    canvas.width = rawImage.naturalWidth;
+    canvas.height = rawImage.naturalHeight;
 
     // Then draw the image
-    console.log('works');
-    ctx.drawImage(await rawImage, 0, 0);
+    ctx.drawImage(rawImage, 0, 0);
     // Get the image data
-    console.log('works');
     let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    console.log('works');
     // Add operations based off of what we want
     let queuedOps = [];
     Object.entries($options).forEach(([key, value]) => {
@@ -50,25 +44,26 @@
     // Then loop through, modify and return image data
     imgData = await modifyImgData(imgData, queuedOps);
     // Draw onto canvas
-    ctx.putImageData(await imgData, 0, 0);
+    ctx.putImageData(imgData, 0, 0);
+    // Append canvas 
+
+
     // Canvas to base64
-    const dataURL = await canvas.toDataURL();
-    return await dataURL;
+    const dataURL = canvas.toDataURL();
+    return dataURL;
   };
 
-  const createImage = async (raw: string): Promise<any> => {
+  const createImage = async (raw: string): Promise<HTMLImageElement> =>
     new Promise((resolve) => {
       // First we've gotta create the image so we can get its dimensions
       const rawImage = new Image();
       // rawImage.onload = async () => resolve(rawImage);
       rawImage.onload = () => {
-        console.log(rawImage.src);
-        resolve(rawImage)};
+        resolve(rawImage);
+      };
       // Set the src to our base64 string
       rawImage.src = raw;
     });
-  };
-
   const binaryImage = async (imageData: ImageData) => {};
 
   const invertImage = async (imageData: ImageData) => {};
@@ -76,10 +71,11 @@
   const modifyImgData = async (
     imageData: ImageData,
     queuedOps
-  ): Promise<any> => {
-    const tempImageData = imageData.data;
-    console.log(tempImageData);
-    for (let i = 0; i < tempImageData.length; i += 4) {}
+  ): Promise<ImageData> => {
+    const tempImageData = imageData;
+    console.log(tempImageData.data);
+    for (let i = 0; i < tempImageData.data.length; i += 4) {}
+    return await tempImageData;
   };
 </script>
 

@@ -19,21 +19,36 @@
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
     const raw = await getClipboardImageSources(e.clipboardData.items);
     if (raw.length > 0) {
+      // Have to garbage collect the dataToBlobURL
+      await destroyBlobURLs(images);
       // We can update images with the link
       images = await raw;
       // However, we want to preprocess the image if needed
       const processed = await processImageComponent.processImageAll(raw);
-      ocrdImages = tesseractRecognize(processed);
+      ocrdImages = await tesseractRecognize(processed);
     }
   };
 
-  const dataToFile = (data: DataTransferItem): Promise<File> =>
-    Promise.resolve(data.getAsFile());
+  const dataToBlobURL = (data: DataTransferItem): Promise<string> =>
+    new Promise((resolve, reject) =>
+      resolve(URL.createObjectURL(data.getAsFile()))
+    );
+
+  const destroyBlobURLs = async (blobURLs: string[]) => {
+    const temp: Promise<void>[] = [];
+    for (let i = 0; i < blobURLs.length; i++) {
+      temp.push(destroyBlobURL(blobURLs[i]));
+    }
+    await Promise.all(temp);
+  };
+
+  const destroyBlobURL = async (blobURL: string) =>
+    Promise.resolve(URL.revokeObjectURL(blobURL));
 
   const getClipboardImageSources = async (
     clipboardImages: DataTransferItemList
   ): Promise<string[]> => {
-    const tempImageSources: string[] = [];
+    const tempImageSources: Promise<string>[] = [];
     for (let i = 0; i < clipboardImages.length; i++) {
       if (clipboardImages[i].type.match(/image/)) {
         // from clipboard format into file
@@ -41,27 +56,28 @@
         // form file into base 64 i think
         // const imageText = await fileToText(imageFile);
         tempImageSources.push(
-          await fileToText(await dataToFile(clipboardImages[i]))
+          // await fileToText(await da)taToFile(clipboardImages[i]))
+          dataToBlobURL(clipboardImages[i])
         );
       }
     }
-    return tempImageSources;
+    return Promise.all(tempImageSources);
   };
 
-  const fileToText = (file: File): Promise<string> => {
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onerror = () => {
-        reader.abort();
-        reject('error gg ffs');
-      };
+  // const fileToText = (file: File): Promise<string> => {
+  //   const reader = new FileReader();
+  //   return new Promise((resolve, reject) => {
+  //     reader.onerror = () => {
+  //       reader.abort();
+  //       reject('error gg ffs');
+  //     };
 
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
+  //     reader.onload = () => {
+  //       resolve(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   });
+  // };
 
   // Prevent the default paste action, don't need for images i think
   // e.preventDefault();
