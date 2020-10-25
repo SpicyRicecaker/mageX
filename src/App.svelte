@@ -1,13 +1,23 @@
 <script lang="ts">
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
+  import Progress from './Progress.svelte';
+  import Loader from './Loader.svelte';
+  import Square from './Square.svelte';
 
+  const work = {
+    status: 'none',
+    progress: 0,
+  };
+
+  let ready = false;
   let images: string[] = [];
+  let ocrdImages: any;
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
     const t = await getClipboardImageSources(e.clipboardData.items);
     if (t.length > 0) {
       images = await t;
-      await tesseractRecognize(images);
+      ocrdImages = tesseractRecognize(images);
     }
   };
 
@@ -49,31 +59,20 @@
 
 <style lang="scss">
   main {
-    text-align: center;
     max-width: 240px;
-    margin: 0 auto;
     width: 100%;
     height: 100%;
   }
-
-  /* h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
-  } */
 
   .wrapper {
     width: 100%;
     height: 100%;
-  }
-  .container-image {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background-color: #cacaca;
-    width: 100%;
-    height: 100%;
   }
-
   .image-actual {
     max-width: 100%;
     max-height: 100%;
@@ -88,11 +87,24 @@
 
 <main on:paste={handleImagePaste}>
   <div class="wrapper">
-    <div class="container-image">
-      {#each images as image, i}
-        <img class="image-actual" src={image} alt="pasted clipboard item {i}" />
-      {/each}
-    </div>
+    {#if !ready}
+      <Loader bind:message={work.status} />
+    {/if}
+    {#each images as image, i}
+      <img class="image-actual" src={image} alt="pasted clipboard item {i}" />
+      {#await ocrdImages}
+        <Progress bind:status={work.status} bind:progress={work.progress} />
+      {:then ocrdImage}
+        <Square ocrdImage={ocrdImage[i]} />
+      {:catch error}
+        <div>Decent{error}</div>
+      {/await}
+    {/each}
   </div>
-  <Tesseract/>
+  <Tesseract
+    bind:ready
+    on:work={(event) => {
+      work.status = event.detail.status;
+      work.progress = event.detail.progress;
+    }} />
 </main>
