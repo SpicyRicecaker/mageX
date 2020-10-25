@@ -28,7 +28,7 @@
     // Add operations based off of what we want
     let queuedOps = [];
     Object.entries($options).forEach(([key, value]) => {
-      if ($options[key] === true) {
+      if ($options[key].isActive === true) {
         switch (key) {
           case 'binary': {
             queuedOps.push(binaryImage);
@@ -45,8 +45,8 @@
     imgData = await modifyImgData(imgData, queuedOps);
     // Draw onto canvas
     ctx.putImageData(imgData, 0, 0);
-    // Append canvas 
-
+    // Append canvas DEBUGGGGGGGGGGGGGGGGG
+    document.body.appendChild(canvas);
 
     // Canvas to base64
     const dataURL = canvas.toDataURL();
@@ -64,18 +64,28 @@
       // Set the src to our base64 string
       rawImage.src = raw;
     });
-  const binaryImage = async (imageData: ImageData) => {};
 
-  const invertImage = async (imageData: ImageData) => {};
+  interface pixelProcessor
+
+  const binaryImage = async (pixel: number[]): Promise<number[]> => {};
+
+  const invertImage = async (pixel: number[]): Promise<number[]> => {};
 
   const modifyImgData = async (
     imageData: ImageData,
-    queuedOps
+    queuedOps: 
   ): Promise<ImageData> => {
-    const tempImageData = imageData;
-    console.log(tempImageData.data);
-    for (let i = 0; i < tempImageData.data.length; i += 4) {}
-    return await tempImageData;
+    let ops = queuedOps.length;
+    console.log(imageData.data);
+    // Loop through all pixels (R,G,B,A)
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      // Loop through all required tasks
+      for (let j = 0; j < ops; ++j) {
+        // Set pixels equal to the result of the operations
+        [imageData[i], imageData[i+1], imageData[i+2]] = queuedOps[j]();
+      }
+    }
+    return imageData;
   };
 </script>
 

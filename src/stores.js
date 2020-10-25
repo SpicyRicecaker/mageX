@@ -4,4 +4,7 @@ export const lang = writable('chi_sim');
 
 export const ready = writable(false);
 
-export const options = writable({ binary: false, invert: false });
+export const options = writable({
+  binarify: { parameters: { threshold: 127 }, isActive: false },
+  invert: { isActive: false },
+});
