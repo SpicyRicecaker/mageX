@@ -1,9 +1,22 @@
 <script lang="ts">
-import type { destroy_block } from "svelte/internal";
-
-export let ocrdImage:any;
-// debug
-console.log(ocrdImage);
+  interface hocrType {
+    blocks: [
+      {
+        bbox: {
+          x0: number;
+          y0: number;
+          x1: number;
+          y1: number;
+        };
+        page: {
+          text: string;
+        };
+      }
+    ];
+  }
+  export let ocrdImage: hocrType;
+  // debug
+  console.log(ocrdImage);
 </script>
 
 <style lang="scss">
@@ -17,6 +30,7 @@ console.log(ocrdImage);
 </style>
 
 <main>
-<!-- {#each ocrdImage.blocks}
-{/each} -->
+  {#each ocrdImage.blocks as block, i}
+    <div>{block.page.text}</div>
+  {/each}
 </main>
