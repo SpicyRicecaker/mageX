@@ -6,6 +6,9 @@
   import Square from './Square.svelte';
   import Options from './Options.svelte';
   import ProcessImage from './ProcessImage.svelte';
+  // DEBUG
+  import { beg, end } from './Timing.svelte';
+  let tim = 0;
 
   let processImageComponent;
   const work = {
@@ -17,15 +20,29 @@
   let ocrdImages: any;
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
+    tim = beg();
     const raw = await getClipboardImageSources(e.clipboardData.items);
+    end(tim, 'get clipboard image sources');
     if (raw.length > 0) {
       // Have to garbage collect the dataToBlobURL
-      await destroyBlobURLs(images);
+      Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
+      tim = beg();
       images = await raw;
+      end(tim, 'await raw');
       // However, we want to preprocess the image if needed
-      const processed = await processImageComponent.processImageAll(raw);
-      ocrdImages = await tesseractRecognize(processed);
+      tim = beg();
+      // const processed = await processImageComponent.processImageAll(raw);
+      // end(tim, 'process all images');
+      // if (processed.length === 0) {
+      //   tim = beg();
+      //   ocrdImages = await tesseractRecognize(processed);
+      //   end(tim, 'recog all images');
+      // } else {
+      //   tim = beg();
+      //   ocrdImages = await tesseractRecognize(images);
+      //   end(tim, 'recog all images');
+      // }
     }
   };
 
@@ -55,10 +72,12 @@
         // const imageFile = await dataToFile(clipboardImages[i]);
         // form file into base 64 i think
         // const imageText = await fileToText(imageFile);
+        const tim = beg();
         tempImageSources.push(
           // await fileToText(await da)taToFile(clipboardImages[i]))
           dataToBlobURL(clipboardImages[i])
         );
+        end(tim, 'convert to blob');
       }
     }
     return Promise.all(tempImageSources);
