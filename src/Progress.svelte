@@ -20,9 +20,9 @@
     align-items: center;
   }
 
-  #wrapper {
-    // position: absolute;
-  }
+  // #wrapper {
+  // position: absolute;
+  // }
 
   // @media (min-width: 640px) {
   //   main {

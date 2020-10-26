@@ -6,15 +6,6 @@
   export const processImageAll = async (
     rawArray: string[]
   ): Promise<string[]> => {
-    let processed = [];
-    for (let i = 0; i < rawArray.length; i++) {
-      processed.push(await processImage(rawArray[i]));
-    }
-    return await processed;
-  };
-
-  // Takes in an image source, does some processing on it, and then returns the resulting image source
-  export const processImage = async (raw: string): Promise<string> => {
     // Add operations based off of what we want
     let queuedOps: pixelProcessor[] = [];
     Object.entries($options).forEach(([key, value]) => {
@@ -33,9 +24,18 @@
     });
     // If we have no queued ops just return
     if (queuedOps.length === 0) {
-      return '';
+      return [];
     }
+    // Now actually process the images
+    let processed:Promise<string>[] = [];
+    for (let i = 0; i < rawArray.length; i++) {
+      processed.push(processImage(rawArray[i]));
+    }
+    return await Promise.all(processed);
+  };
 
+  // Takes in an image source, does some processing on it, and then returns the resulting image source
+  export const processImage = async (raw: string): Promise<string> => {
     const rawImage = await createImage(raw);
     // Onload we can do canvas stuff
     // Set canvas width and height
@@ -49,10 +49,6 @@
     // Then loop through, modify and return image data
     const d = imageData.data;
 
-    return '';
-    // DEBUG
-    const tick = () => Date.now();
-    const before = tick();
 
     // await modifyImgData(imageData.data, queuedOps);
     await Promise.resolve(console.log('resolve init promise')).then(() => {
@@ -60,37 +56,38 @@
       for (let i = 0; i < d.length; i += 4) {
         // [imageData.data[i], imageData.data[i+1], imageData.data[i+2]] = invertImage([imageData.data[i], imageData.data[i+1], imageData.data[i+2]]);
 
-        // const gray =
-        //   0.2126 * imageData.data[i] +
-        //   0.7152 * imageData.data[i + 1] +
-        //   0.0722 * imageData.data[i + 2];
-        // // Now we cross check it with our threshold
-        // if (gray < $options.binarify.parameters.threshold) {
-        //   imageData.data[i] = 0;
-        //   imageData.data[i + 1] = 0;
-        //   imageData.data[i + 2] = 0;
-        // } else {
-        //   imageData.data[i] = 255;
-        //   imageData.data[i + 1] = 255;
-        //   imageData.data[i + 2] = 255;
-        // }
-        d[i] = 255 - d[i];
-        d[i + 1] = 255 - d[i + 1];
-        d[i + 2] = 255 - d[i + 2];
+        const gray =
+          0.2126 * imageData.data[i] +
+          0.7152 * imageData.data[i + 1] +
+          0.0722 * imageData.data[i + 2];
+        // Now we cross check it with our threshold
+        // < for only grayscale
+        // > for invert + grayscale
+        if (gray > $options.binarify.parameters.threshold) {
+          imageData.data[i] = 0;
+          imageData.data[i + 1] = 0;
+          imageData.data[i + 2] = 0;
+        } else {
+          imageData.data[i] = 255;
+          imageData.data[i + 1] = 255;
+          imageData.data[i + 2] = 255;
+        }
+        // d[i] = 255 - d[i];
+        // d[i + 1] = 255 - d[i + 1];
+        // d[i + 2] = 255 - d[i + 2];
       }
     });
 
     // DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGgg
 
-    console.log('time it took to modify image', tick() - before);
     // Draw onto canvas
-    // ctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
     // Append canvas DEBUGGGGGGGGGGGGGGGGG
-    // document.body.appendChild(canvas);
+    document.body.appendChild(canvas);
 
     // Canvas to base64
-    // const dataURL = canvas.toDataURL();
-    // return dataURL;
+    const dataURL = canvas.toDataURL();
+    return dataURL;
   };
 
   // DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGg

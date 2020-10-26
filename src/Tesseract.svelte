@@ -9,7 +9,20 @@
     for (let i = 0; i < srcArray.length; ++i) {
       outArray.push((await worker.recognize(srcArray[i])).data);
     }
+    
+    console.log(await outArray);
     return await outArray;
+    
+    // for (let i = 0; i < srcArray.length; ++i){
+    //   outArray.push(worker.recognize(srcArray[i]))
+    // }
+
+    // await Promise.all(outArray);
+
+    // for (let i = 0; i < srcArray.length; ++i) {
+    //   outArray[i] = outArray[i].data;
+    // }
+    // return outArray;
   };
 
   export const killTesseractWorkers = async () => {
@@ -49,9 +62,8 @@
     await worker.initialize($lang);
     await ready.set(true);
   };
-  export const changeWrokerLang = async () => {
-    await worker.terminate();
-    await spawnTesseractWorkers();
+  export const changeWorkerLang = async () => {
+    await Promise.all([worker.terminate(), spawnTesseractWorkers()]);
     await ready.set(false);
   };
 </script>

@@ -29,6 +29,7 @@
   // }
 </style>
 
+{@debug ocrdImage}
 <main>
   {#each ocrdImage.blocks as block, i}
     <div>{block.page.text}</div>
