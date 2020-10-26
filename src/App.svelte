@@ -21,6 +21,9 @@
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
     tim = beg();
+    // const raw = await Promise.resolve().then(
+    //   async () => await getClipboardImageSources(e.clipboardData.items)
+    // );
     const raw = await getClipboardImageSources(e.clipboardData.items);
     end(tim, 'get clipboard image sources');
     if (raw.length > 0) {
@@ -51,6 +54,9 @@
       resolve(URL.createObjectURL(data.getAsFile()))
     );
 
+  // const dataToFile = (data: DataTransferItem): Promise<File> =>
+  //   Promise.resolve(data.getAsFile());
+
   const destroyBlobURLs = async (blobURLs: string[]) => {
     const temp: Promise<void>[] = [];
     for (let i = 0; i < blobURLs.length; i++) {
@@ -68,13 +74,15 @@
     const tempImageSources: Promise<string>[] = [];
     for (let i = 0; i < clipboardImages.length; i++) {
       if (clipboardImages[i].type.match(/image/)) {
+        const b = clipboardImages[i];
+        return [URL.createObjectURL(b.getAsFile())];
         // from clipboard format into file
         // const imageFile = await dataToFile(clipboardImages[i]);
         // form file into base 64 i think
         // const imageText = await fileToText(imageFile);
         const tim = beg();
         tempImageSources.push(
-          // await fileToText(await da)taToFile(clipboardImages[i]))
+          // await fileToText(await dataToFile(clipboardImages[i]))
           dataToBlobURL(clipboardImages[i])
         );
         end(tim, 'convert to blob');
