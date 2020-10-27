@@ -1,5 +1,6 @@
 <script lang="ts">
   interface hocrType {
+    hocr: string;
     blocks: [
       {
         bbox: {
@@ -16,22 +17,22 @@
   }
   export let ocrdImage: hocrType;
   // debug
-  // console.log(ocrdImage);
+  console.log(ocrdImage);
 </script>
 
 <style lang="scss">
   // main {
-    // text-align: center;
-    // max-width: 240px;
-    // margin: 0 auto;
-    // width: 100%;
-    // height: 100%;
+  // text-align: center;
+  // max-width: 240px;
+  // margin: 0 auto;
+  // width: 100%;
+  // height: 100%;
   // }
 </style>
 
-{@debug ocrdImage}
 <main>
-  {#each ocrdImage.blocks as block, i}
+  {@html ocrdImage.hocr}
+  <!-- {#each ocrdImage.blocks as block, i}
     <div>{block.page.text}</div>
-  {/each}
+  {/each} -->
 </main>

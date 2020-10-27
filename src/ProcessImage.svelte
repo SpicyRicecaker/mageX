@@ -51,8 +51,7 @@
 
 
     // await modifyImgData(imageData.data, queuedOps);
-    await Promise.resolve(console.log('resolve init promise')).then(() => {
-      console.log('doing the thing');
+    await Promise.resolve().then(() => {
       for (let i = 0; i < d.length; i += 4) {
         // [imageData.data[i], imageData.data[i+1], imageData.data[i+2]] = invertImage([imageData.data[i], imageData.data[i+1], imageData.data[i+2]]);
 

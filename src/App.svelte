@@ -1,123 +1,44 @@
 <script lang="ts">
-  import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
-  import { ready } from './stores.js';
-  import Progress from './Progress.svelte';
-  import Loader from './Loader.svelte';
-  import Square from './Square.svelte';
+  import type { SvelteComponent } from 'svelte';
+  // The nav module is basically the tabbed view manager
+  import Tab from './Tab.svelte';
+
+  // Import OCR tab
+  import Translate from './Translate.svelte';
+  // Import Options tab for image processing
   import Options from './Options.svelte';
-  import ProcessImage from './ProcessImage.svelte';
-  // DEBUG
-  // import { beg, end } from './Timing.svelte';
-  // let tim = 0;
 
-  let processImageComponent;
-  const work = {
-    status: 'none',
-    progress: 0,
-  };
+  interface viewItem {
+    label: string;
+    value: number;
+    component: typeof SvelteComponent;
+  }
 
-  let images: string[] = [];
-  let ocrdImages: any;
-  const handleImagePaste = async (e: ClipboardEvent) => {
-    // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
-    const raw = await getClipboardImageSources(e.clipboardData.items);
-    if (raw.length > 0) {
-      // Have to garbage collect the dataToBlobURL
-      // Promise.resolve().then(() => destroyBlobURLs(images));
-      // We can update images with the link
+  interface viewItems extends Array<viewItem> {}
 
-      const processed = await processImageComponent.processImageAll(raw);
-      console.log('were processed pogger');
-      images = await raw;
-      // However, we want to preprocess the image if needed
-      if (processed.length === 0) {
-        ocrdImages = tesseractRecognize(images);
-      } else {
-        console.log('were using the processed stuff');
-        console.log(processed);
-        ocrdImages = tesseractRecognize(processed);
-      }
-    }
-  };
-
-  const dataToBlobURL = (data: DataTransferItem): Promise<string> =>
-    new Promise((resolve, reject) =>
-      resolve(URL.createObjectURL(data.getAsFile()))
-    );
-
-  // const dataToFile = (data: DataTransferItem): Promise<File> =>
-  //   Promise.resolve(data.getAsFile());
-
-  const destroyBlobURLs = async (blobURLs: string[]) => {
-    const temp: Promise<void>[] = [];
-    for (let i = 0; i < blobURLs.length; i++) {
-      temp.push(destroyBlobURL(blobURLs[i]));
-    }
-    await Promise.all(temp);
-  };
-
-  const destroyBlobURL = async (blobURL: string) =>
-    Promise.resolve(URL.revokeObjectURL(blobURL));
-
-  const getClipboardImageSources = async (
-    clipboardImages: DataTransferItemList
-  ): Promise<string[]> => {
-    const tempImageSources: Promise<string>[] = [];
-    for (let i = 0; i < clipboardImages.length; i++) {
-      if (clipboardImages[i].type.match(/image/)) {
-        // from clipboard format into file
-        // const imageFile = await dataToFile(clipboardImages[i]);
-        // form file into base 64 i think
-        // const imageText = await fileToText(imageFile);
-        tempImageSources.push(
-          // await fileToText(await dataToFile(clipboardImages[i]))
-          dataToBlobURL(clipboardImages[i])
-        );
-      }
-    }
-    return Promise.all(tempImageSources);
-  };
-
-  // const fileToText = (file: File): Promise<string> => {
-  //   const reader = new FileReader();
-  //   return new Promise((resolve, reject) => {
-  //     reader.onerror = () => {
-  //       reader.abort();
-  //       reject('error gg ffs');
-  //     };
-
-  //     reader.onload = () => {
-  //       resolve(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   });
-  // };
-
-  // Prevent the default paste action, don't need for images i think
-  // e.preventDefault();
+  // Views is all of our components that we just imported in an array
+  const views: viewItems = [
+    {
+      label: 'Translate',
+      value: 0,
+      component: Translate,
+    },
+    {
+      label: 'Options',
+      value: 1,
+      component: Options,
+    },
+  ];
 </script>
 
 <style lang="scss">
+  // The styling in here mostly just adapts for small displays
+  // Then maximizes the canvas
   main {
     max-width: 240px;
     width: 100%;
     height: 100%;
   }
-
-  .wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #cacaca;
-  }
-  .image-actual {
-    max-width: 100%;
-    max-height: 100%;
-  }
-
   @media (min-width: 640px) {
     main {
       max-width: none;
@@ -125,29 +46,7 @@
   }
 </style>
 
-<!-- {@debug ocrdImages} -->
-
-<main on:paste={handleImagePaste}>
-  <div class="wrapper">
-    {#if !$ready}
-      <Loader bind:message={work.status} />
-    {/if}
-    {#each images as image, i}
-      <img class="image-actual" src={image} alt="pasted clipboard item {i}" />
-      {#await ocrdImages}
-        <Progress bind:status={work.status} bind:progress={work.progress} />
-      {:then ocrdImage}
-        <Square ocrdImage={ocrdImage[i]} />
-      {:catch error}
-        <div>Decent{error}</div>
-      {/await}
-    {/each}
-  </div>
-  <Tesseract
-    on:work={(event) => {
-      work.status = event.detail.status;
-      work.progress = event.detail.progress;
-    }} />
+<main>
+  <!-- As for functions, we just spread / inject our views into the nav -->
+  <Tab {views} />
 </main>
-<Options />
-<ProcessImage bind:this={processImageComponent} />

@@ -10,7 +10,6 @@
       outArray.push((await worker.recognize(srcArray[i])).data);
     }
     
-    console.log(await outArray);
     return await outArray;
     
     // for (let i = 0; i < srcArray.length; ++i){
