@@ -1,16 +1,13 @@
 <script lang="ts">
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
   import { ready } from './stores.js';
-  import Nav from './Tab.svelte';
   import Progress from './Progress.svelte';
   import Loader from './Loader.svelte';
   import Square from './Square.svelte';
-  // import Options from './Options.svelte';
   import ProcessImage from './ProcessImage.svelte';
   // DEBUG
   // import { beg, end } from './Timing.svelte';
   // let tim = 0;
-
 
   let processImageComponent;
   const work = {
@@ -27,15 +24,14 @@
       // Have to garbage collect the dataToBlobURL
       // Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
-
-      const processed = await processImageComponent.processImageAll(raw);
-      images = await raw;
+      images = raw;
+      // const processed = await processImageComponent.processImageAll(raw);
       // However, we want to preprocess the image if needed
-      if (processed.length === 0) {
-        ocrdImages = tesseractRecognize(images);
-      } else {
-        ocrdImages = tesseractRecognize(processed);
-      }
+      // if (processed.length === 0) {
+      //   ocrdImages = tesseractRecognize(images);
+      // } else {
+      //   ocrdImages = tesseractRecognize(processed);
+      // }
     }
   };
 
@@ -98,28 +94,42 @@
 
 <style lang="scss">
   main {
-    max-width: 240px;
     width: 100%;
     height: 100%;
+    // display: flex;
+    // flex-direction: column;
   }
 
   .wrapper {
+    background-color: aliceblue;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    background-color: #cacaca;
+    justify-content: center;
+    overflow: hidden;
+    // width: 100%;
+    // height: 100%;
+    // background-color: #cacaca;
   }
+
+  .imageWrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+  }
+
   .image-actual {
-    max-width: 100%;
-    max-height: 100%;
+    // max-width: 100%;
+    // max-height: 100%;
+    flex: 1;
+    vertical-align: bottom;
+    object-fit: contain;
+    // align-self: center;
   }
-
 </style>
-
-{@debug images}
 
 <main on:paste={handleImagePaste}>
   <div class="wrapper">
@@ -127,14 +137,16 @@
       <Loader bind:message={work.status} />
     {/if}
     {#each images as image, i}
-      <img class="image-actual" src={image} alt="123" />
-      {#await ocrdImages}
+      <div class="imageWrapper">
+        <img class="image-actual" src={image} alt="123" />
+      </div>
+      <!-- {#await ocrdImages}
         <Progress bind:status={work.status} bind:progress={work.progress} />
       {:then ocrdImage}
         <Square ocrdImage={ocrdImage[i]} />
       {:catch error}
         <div>Decent{error}</div>
-      {/await}
+      {/await} -->
     {/each}
   </div>
   <Tesseract
@@ -142,6 +154,5 @@
       work.status = event.detail.status;
       work.progress = event.detail.progress;
     }} />
+  <ProcessImage bind:this={processImageComponent} />
 </main>
-<!-- <Options /> -->
-<ProcessImage bind:this={processImageComponent} />

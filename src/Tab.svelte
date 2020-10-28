@@ -14,6 +14,20 @@
   export let activeView = 0;
 </script>
 
+<style lang="scss">
+  main {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  div {
+    flex: 1;
+    overflow: auto;
+  }
+</style>
+
 <svelte:head>
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
@@ -21,10 +35,12 @@
 </svelte:head>
 
 <main>
-  <Nav {views} {activeView}/>
+  <Nav {views} bind:activeView />
   {#each views as view}
     {#if activeView === view.value}
-      <svelte:component this={view.component} />
+      <div>
+        <svelte:component this={view.component} />
+      </div>
     {/if}
   {/each}
 </main>

@@ -32,12 +32,17 @@
 </script>
 
 <style lang="scss">
+  :global(body) {
+    margin: 0;
+    padding: 0;
+  }
   // The styling in here mostly just adapts for small displays
   // Then maximizes the canvas
   main {
-    max-width: 240px;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
   }
   @media (min-width: 640px) {
     main {
