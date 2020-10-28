@@ -1,31 +1,46 @@
 <script lang="ts">
+  // OCR component
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
+  // Are workers ready for new task, stored in store
   import { ready } from './stores.js';
-  import Progress from './Progress.svelte';
+  // The initial loading circle for Tesseract
   import Loader from './Loader.svelte';
+  // Progress bar based off of worker progress (dispatched event progress)
+  import Progress from './Progress.svelte';
+  // [WIP] Our resulting bounding boxes from OCR
   import Square from './Square.svelte';
+  // Takes in image and processes it for better OCR results
   import ProcessImage from './ProcessImage.svelte';
-  // DEBUG
+  // Debugs time it takes to complete func. First const start = beg(); then end(start, [message])
+  import { fade, fly } from 'svelte/transition';
   // import { beg, end } from './Timing.svelte';
-  // let tim = 0;
 
+  // We bind this to process image because we need to access $store variables
+  // context="module" makes it so that you can't access $store for some reason
   let processImageComponent;
+
+  // Work responds to the worker progress being dispatched in './Tesseract.svelte'
   const work = {
     status: 'none',
     progress: 0,
   };
 
-  let images: string[] = [];
+  // [WIP] An array of image sources, SHOULD CHANGE TO ARRAY OF HTML IMAGES
+  let images: HTMLImageElement[] = [];
+  // The resulting hocr object from tesseract OCRing an image
   let ocrdImages: any;
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
+    // Get our clipboardImages as an array of blobs
     const raw = await getClipboardImageSources(e.clipboardData.items);
-    if (raw.length > 0) {
+    // Convert them to images
+    const tempImages = await loadNewImages(raw);
+    if (tempImages.length > 0) {
       // Have to garbage collect the dataToBlobURL
       // Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
-      images = raw;
-      const processed = await processImageComponent.processImageAll(raw);
+      images = tempImages;
+      const processed = await processImageComponent.processImageAll(tempImages);
       // However, we want to preprocess the image if needed
       if (processed.length === 0) {
         ocrdImages = tesseractRecognize(images);
@@ -40,9 +55,6 @@
       resolve(URL.createObjectURL(data.getAsFile()))
     );
 
-  // const dataToFile = (data: DataTransferItem): Promise<File> =>
-  //   Promise.resolve(data.getAsFile());
-
   const destroyBlobURLs = async (blobURLs: string[]) => {
     const temp: Promise<void>[] = [];
     for (let i = 0; i < blobURLs.length; i++) {
@@ -54,50 +66,45 @@
   const destroyBlobURL = async (blobURL: string) =>
     Promise.resolve(URL.revokeObjectURL(blobURL));
 
+  // Takes in clipboard image sources and returns them as blob
   const getClipboardImageSources = async (
     clipboardImages: DataTransferItemList
   ): Promise<string[]> => {
     const tempImageSources: Promise<string>[] = [];
     for (let i = 0; i < clipboardImages.length; i++) {
       if (clipboardImages[i].type.match(/image/)) {
-        // from clipboard format into file
-        // const imageFile = await dataToFile(clipboardImages[i]);
-        // form file into base 64 i think
-        // const imageText = await fileToText(imageFile);
-        tempImageSources.push(
-          // await fileToText(await dataToFile(clipboardImages[i]))
-          dataToBlobURL(clipboardImages[i])
-        );
+        tempImageSources.push(dataToBlobURL(clipboardImages[i]));
       }
     }
     return Promise.all(tempImageSources);
   };
 
-  // const fileToText = (file: File): Promise<string> => {
-  //   const reader = new FileReader();
-  //   return new Promise((resolve, reject) => {
-  //     reader.onerror = () => {
-  //       reader.abort();
-  //       reject('error gg ffs');
-  //     };
+  const loadNewImages = async (
+    srcArr: string[]
+  ): Promise<HTMLImageElement[]> => {
+    // First define out
+    const out: Promise<HTMLImageElement>[] = [];
+    // Load all srces into array and promise.all of them
+    for (let i = 0; i < srcArr.length; ++i) {
+      out.push(loadNewImage(srcArr[i]));
+    }
+    return await Promise.all(out);
+  };
 
-  //     reader.onload = () => {
-  //       resolve(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   });
-  // };
-
-  // Prevent the default paste action, don't need for images i think
-  // e.preventDefault();
+  const loadNewImage = (src: string): Promise<HTMLImageElement> =>
+    new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.src = src;
+    });
 </script>
 
 <style lang="scss">
   main {
     width: 100%;
     height: 100%;
-    // display: flex;
-    // flex-direction: column;
+    position: relative;
+    overflow: hidden;
   }
 
   .wrapper {
@@ -106,50 +113,53 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    overflow: hidden;
-    // width: 100%;
-    // height: 100%;
-    // background-color: #cacaca;
   }
 
   .imageWrapper {
     flex: 1;
     display: flex;
-    flex-direction: row;
     overflow: auto;
   }
 
-  .image-actual {
-    // max-width: 100%;
-    // max-height: 100%;
-    flex: 1;
-    vertical-align: bottom;
-    object-fit: contain;
-    // align-self: center;
+  .bigwrapper {
+    background-color: rgba(255, 255, 255, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 </style>
 
 <main on:paste={handleImagePaste}>
+  {#if ocrdImages}
+    {#await ocrdImages}
+      <div class="bigwrapper" transition:fly={{ y: 500, duration: 2000 }}>
+        <Progress bind:status={work.status} bind:progress={work.progress} />
+      </div>
+    {/await}
+  {/if}
   <div class="wrapper">
     {#if !$ready}
       <Loader bind:message={work.status} />
     {/if}
     {#each images as image, i}
-      <div class="imageWrapper">
-        <img class="image-actual" src={image} alt="123" />
+      <div class="imageWrapper" transition:fade>
+        <svg viewBox="0 0 {image.naturalWidth} {image.naturalHeight}">
+          <image
+            width={image.naturalWidth}
+            height={image.naturalHeight}
+            xlink:href={image.src} />
+          {#if ocrdImages}
+            {#await ocrdImages then ocrdImage}
+              <!-- {@debug ocrdImage} -->
+              <!-- <Square {boundingBoxes} /> -->
+            {/await}
+          {/if}
+        </svg>
       </div>
-      {@debug ocrdImages}
-      {#if ocrdImages}
-        {#await ocrdImages}
-          <Progress bind:status={work.status} bind:progress={work.progress} />
-        {:then ocrdImage}
-          <Square ocrdImage={ocrdImage[i]} />
-        {:catch error}
-          <div>Decent{error}</div>
-        {/await}
-      {/if}
     {/each}
   </div>
   <Tesseract

@@ -4,8 +4,8 @@
   const ctx = canvas.getContext('2d');
   // Takes in an array of srcs and calls process on all of them
   export const processImageAll = async (
-    rawArray: string[]
-  ): Promise<string[]> => {
+    rawArray: HTMLImageElement[]
+  ): Promise<HTMLImageElement[]> => {
     // Add operations based off of what we want
     let queuedOps: pixelProcessor[] = [];
     Object.entries($options).forEach(([key, value]) => {
@@ -27,23 +27,23 @@
       return [];
     }
     // Now actually process the images
-    let processed:Promise<string>[] = [];
+    let processed:Promise<HTMLImageElement>[] = [];
     for (let i = 0; i < rawArray.length; i++) {
-      processed.push(processImage(rawArray[i]));
+      processed.push(processImage(HTMLImageElement[i]));
     }
     return await Promise.all(processed);
   };
 
   // Takes in an image source, does some processing on it, and then returns the resulting image source
-  export const processImage = async (raw: string): Promise<string> => {
-    const rawImage = await createImage(raw);
+  export const processImage = async (raw: HTMLImageElement): Promise<HTMLImageElement> => {
+    // const rawImage = await createImage(raw);
     // Onload we can do canvas stuff
     // Set canvas width and height
-    canvas.width = rawImage.naturalWidth;
-    canvas.height = rawImage.naturalHeight;
+    canvas.width = raw.naturalWidth;
+    canvas.height = raw.naturalHeight;
 
     // Then draw the image
-    ctx.drawImage(rawImage, 0, 0);
+    ctx.drawImage(raw, 0, 0);
     // Get the image data
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     // Then loop through, modify and return image data
@@ -76,17 +76,14 @@
         // d[i + 2] = 255 - d[i + 2];
       }
     });
-
-    // DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGgg
-
     // Draw onto canvas
     ctx.putImageData(imageData, 0, 0);
     // Append canvas DEBUGGGGGGGGGGGGGGGGG
     document.body.appendChild(canvas);
-
     // Canvas to base64
     const dataURL = canvas.toDataURL();
-    return dataURL;
+    // base64 to image
+    return await createImage(dataURL);
   };
 
   // DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGg
@@ -176,11 +173,3 @@
   //   }
   // };
 </script>
-
-<!--<style lang="scss">
-  canvas {
-    display: none;
-  }
-</style>-->
-
-<!-- <canvas id="canvas" /> -->

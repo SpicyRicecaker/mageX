@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition';
   import { tweened } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   export let status = 'none';
@@ -31,7 +32,7 @@
   // }
 </style>
 
-<main>
+<main transition:fade>
   <div id="wrapper">
     <label for="progress">{status}: {Math.round($niceProgress * 100)}%</label>
     <progress id="progress" value={$niceProgress} />
