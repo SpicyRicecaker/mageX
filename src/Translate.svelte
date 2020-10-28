@@ -25,13 +25,13 @@
       // Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
       images = raw;
-      // const processed = await processImageComponent.processImageAll(raw);
+      const processed = await processImageComponent.processImageAll(raw);
       // However, we want to preprocess the image if needed
-      // if (processed.length === 0) {
-      //   ocrdImages = tesseractRecognize(images);
-      // } else {
-      //   ocrdImages = tesseractRecognize(processed);
-      // }
+      if (processed.length === 0) {
+        ocrdImages = tesseractRecognize(images);
+      } else {
+        ocrdImages = tesseractRecognize(processed);
+      }
     }
   };
 
@@ -140,13 +140,16 @@
       <div class="imageWrapper">
         <img class="image-actual" src={image} alt="123" />
       </div>
-      <!-- {#await ocrdImages}
-        <Progress bind:status={work.status} bind:progress={work.progress} />
-      {:then ocrdImage}
-        <Square ocrdImage={ocrdImage[i]} />
-      {:catch error}
-        <div>Decent{error}</div>
-      {/await} -->
+      {@debug ocrdImages}
+      {#if ocrdImages}
+        {#await ocrdImages}
+          <Progress bind:status={work.status} bind:progress={work.progress} />
+        {:then ocrdImage}
+          <Square ocrdImage={ocrdImage[i]} />
+        {:catch error}
+          <div>Decent{error}</div>
+        {/await}
+      {/if}
     {/each}
   </div>
   <Tesseract
