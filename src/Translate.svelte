@@ -155,7 +155,7 @@
           {#if ocrdImages}
             {#await ocrdImages then ocrdImage}
               <!-- {@debug ocrdImage} -->
-              <!-- <Square {boundingBoxes} /> -->
+              <Square ocrdImage={ocrdImage[i]} />
             {/await}
           {/if}
         </svg>
