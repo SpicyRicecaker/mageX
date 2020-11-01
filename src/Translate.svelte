@@ -2,7 +2,7 @@
   // OCR component
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
   // Are workers ready for new task, stored in store
-  import { images, ocrdImages, ready } from './stores';
+  import { images, ocrdImages, processed, ready } from './stores';
   // The initial loading circle for Tesseract
   import Loader from './Loader.svelte';
   // Progress bar based off of worker progress (dispatched event progress)
@@ -37,12 +37,12 @@
       // Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
       $images = tempImages;
-      const processed = await processImageComponent.processImageAll(tempImages);
+      $processed = await processImageComponent.processImageAll(tempImages);
       // However, we want to preprocess the image if needed
-      if (processed.length === 0) {
+      if ($processed.length === 0) {
         $ocrdImages = tesseractRecognize($images);
       } else {
-        $ocrdImages = tesseractRecognize(processed);
+        $ocrdImages = tesseractRecognize($processed);
       }
     }
   };
