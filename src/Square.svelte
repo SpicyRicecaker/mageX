@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { hocrDisplay } from './stores.js';
+  import { hocrDisplay } from './stores';
   interface hocrType {
     hocr: string;
     blocks: [

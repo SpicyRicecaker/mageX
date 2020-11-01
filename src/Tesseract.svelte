@@ -32,7 +32,7 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
-  import { lang, ready } from './stores.js';
+  import { lang, ready } from './stores';
 
   // DEBUG
   // import { onMount } from 'svelte';

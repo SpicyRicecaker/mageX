@@ -11,3 +11,7 @@ export const options = writable({
   binarify: { parameters: { threshold: 127 }, isActive: false },
   invert: { isActive: false },
 });
+
+export const images = writable([]);
+
+export const ocrdImages:any = writable(undefined);

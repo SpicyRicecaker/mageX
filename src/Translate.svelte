@@ -2,7 +2,7 @@
   // OCR component
   import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
   // Are workers ready for new task, stored in store
-  import { ready } from './stores.js';
+  import { images, ocrdImages, ready } from './stores';
   // The initial loading circle for Tesseract
   import Loader from './Loader.svelte';
   // Progress bar based off of worker progress (dispatched event progress)
@@ -25,10 +25,7 @@
     progress: 0,
   };
 
-  // [WIP] An array of image sources, SHOULD CHANGE TO ARRAY OF HTML IMAGES
-  let images: HTMLImageElement[] = [];
   // The resulting hocr object from tesseract OCRing an image
-  let ocrdImages: any;
   const handleImagePaste = async (e: ClipboardEvent) => {
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
     // Get our clipboardImages as an array of blobs
@@ -39,13 +36,13 @@
       // Have to garbage collect the dataToBlobURL
       // Promise.resolve().then(() => destroyBlobURLs(images));
       // We can update images with the link
-      images = tempImages;
+      $images = tempImages;
       const processed = await processImageComponent.processImageAll(tempImages);
       // However, we want to preprocess the image if needed
       if (processed.length === 0) {
-        ocrdImages = tesseractRecognize(images);
+        $ocrdImages = tesseractRecognize($images);
       } else {
-        ocrdImages = tesseractRecognize(processed);
+        $ocrdImages = tesseractRecognize(processed);
       }
     }
   };
@@ -134,8 +131,8 @@
 </style>
 
 <main on:paste={handleImagePaste}>
-  {#if ocrdImages}
-    {#await ocrdImages}
+  {#if $ocrdImages}
+    {#await $ocrdImages}
       <div class="bigwrapper" transition:fly={{ y: 500, duration: 2000 }}>
         <Progress bind:status={work.status} bind:progress={work.progress} />
       </div>
@@ -145,15 +142,15 @@
     {#if !$ready}
       <Loader bind:message={work.status} />
     {/if}
-    {#each images as image, i}
-      <div class="imageWrapper" transition:fade>
+    {#each $images as image, i}
+      <div class="imageWrapper" transition:fade|local>
         <svg viewBox="0 0 {image.naturalWidth} {image.naturalHeight}">
           <image
             width={image.naturalWidth}
             height={image.naturalHeight}
             xlink:href={image.src} />
-          {#if ocrdImages}
-            {#await ocrdImages then ocrdImage}
+          {#if $ocrdImages}
+            {#await $ocrdImages then ocrdImage}
               <!-- {@debug ocrdImage} -->
               <Square ocrdImage={ocrdImage[i]} />
             {/await}

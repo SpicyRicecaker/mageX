@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { options } from './stores.js';
+  import { options } from './stores';
 </script>
 
 <style lang="scss">

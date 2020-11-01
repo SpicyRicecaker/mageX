@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { options } from './stores.js';
+  import { options} from './stores';
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   // Takes in an array of srcs and calls process on all of them
@@ -29,7 +29,7 @@
     // Now actually process the images
     let processed:Promise<HTMLImageElement>[] = [];
     for (let i = 0; i < rawArray.length; i++) {
-      processed.push(processImage(HTMLImageElement[i]));
+      processed.push(processImage(rawArray[i]));
     }
     return await Promise.all(processed);
   };
@@ -78,8 +78,6 @@
     });
     // Draw onto canvas
     ctx.putImageData(imageData, 0, 0);
-    // Append canvas DEBUGGGGGGGGGGGGGGGGG
-    document.body.appendChild(canvas);
     // Canvas to base64
     const dataURL = canvas.toDataURL();
     // base64 to image
