@@ -113,9 +113,11 @@
     justify-content: center;
   }
 
+  // Absolutely cannot have display: flex on chrome
+  // Maybe display block needed?
   .imageWrapper {
-    flex: 1;
-    display: flex;
+    // flex: 1;
+    // display: flex;
     overflow: auto;
   }
 
@@ -144,7 +146,10 @@
     {/if}
     {#each $images as image, i}
       <div class="imageWrapper" transition:fade|local>
-        <svg viewBox="0 0 {image.naturalWidth} {image.naturalHeight}">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 {image.naturalWidth} {image.naturalHeight}">
           <image
             width={image.naturalWidth}
             height={image.naturalHeight}
