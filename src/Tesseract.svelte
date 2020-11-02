@@ -1,13 +1,13 @@
 <script context="module">
   // We're getting an array of strings (or urls), and returning an array of result.data sure!
   // srcArray: string[]
-  let worker;
+  let scheduler;
   export const tesseractRecognize = async (srcArray) => {
     // Tesseract.setLogging(true);
     const outArray = [];
 
     for (let i = 0; i < srcArray.length; ++i) {
-      outArray.push((await worker.recognize(srcArray[i])).data);
+      outArray.push((await scheduler.addJob('recognize', srcArray[i])).data);
     }
 
     return await outArray;
@@ -30,9 +30,9 @@
 </script>
 
 <script>
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
-  import { lang, ready } from './stores';
+  // import { createEventDispatcher } from 'svelte';
+  // const dispatch = createEventDispatcher();
+  import { lang, ready, work } from './stores';
 
   // DEBUG
   // import { onMount } from 'svelte';
@@ -46,19 +46,44 @@
   //   photos = await res.json();
   // });
   // DEBUG
+  // const shouldSpawnTesseract = () => {
+  //   if(!$ready){
+  //     spawnTesseractWorkers
+  //   }
+  // }
+  
+  const init = async () => {
+    await createScheduler();
+    scheduler.addWorker(await spawnTesseractWorker());
+    await ready.set(true);
+  }
+  
+  export const createScheduler = async () => {
+    scheduler = Tesseract.createScheduler();
+  }
 
-  export const spawnTesseractWorkers = async () => {
+  export const spawnTesseractWorker = async () => {
+    console.log('spawning new workers...');
+    let worker;
+    // worker = Tesseract.createWorker({
+    //   logger: (m) =>
+    //     dispatch('work', {
+    //       status: m.status,
+    //       progress: m.progress,
+    //     }),
+    // });
+
     worker = Tesseract.createWorker({
-      logger: (m) =>
-        dispatch('work', {
-          status: m.status,
-          progress: m.progress,
-        }),
+      logger: (m) => {
+        $work.status = m.status;
+        $work.progress = m.progress;
+      },
     });
+
     await worker.load();
     await worker.loadLanguage($lang);
     await worker.initialize($lang);
-    // Remove spaces between words for chinese & japanese
+    // // Remove spaces between words for chinese & japanese
     switch ($lang) {
       case 'chi_sim': // FALLTHROUGH
       case 'jp': //FALLTHROUGH
@@ -69,17 +94,18 @@
       default:
         break;
     }
-    await ready.set(true);
+    return await worker;
   };
-  export const changeWorkerLang = async () => {
-    await Promise.all([worker.terminate(), spawnTesseractWorkers()]);
-    await ready.set(false);
-  };
+
+  // export const changeWorkerLang = async () => {
+  //   await Promise.all([worker.terminate(), spawnTesseractWorkers()]);
+  //   await ready.set(false);
+  // };
 </script>
 
 <svelte:head>
   <script
-    on:load={spawnTesseractWorkers}
+    on:load={init}
     src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js">
   </script>
 </svelte:head>

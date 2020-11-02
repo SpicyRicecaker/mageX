@@ -17,3 +17,8 @@ export const images = writable([]);
 export const ocrdImages: any = writable(undefined);
 
 export const processed = writable([]);
+
+export const work = writable({
+  status: 'downloading tesseract.js',
+  progress: 0,
+});

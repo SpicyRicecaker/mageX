@@ -7,6 +7,10 @@
   import Translate from './Translate.svelte';
   // Import Options tab for image processing
   import Options from './Options.svelte';
+  // Import Tesseract
+  import Tesseract from './Tesseract.svelte';
+  // Import tesseract work
+  import { work } from './stores';
 
   interface viewItem {
     label: string;
@@ -54,4 +58,9 @@
 <main>
   <!-- As for functions, we just spread / inject our views into the nav -->
   <Tab {views} />
+  <Tesseract/>
+    <!-- on:work={(event) => {
+      work.status = event.detail.status;
+      work.progress = event.detail.progress;
+    }}  -->
 </main>

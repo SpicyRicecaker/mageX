@@ -1,8 +1,8 @@
 <script lang="ts">
   // OCR component
-  import Tesseract, { tesseractRecognize } from './Tesseract.svelte';
+  import { tesseractRecognize } from './Tesseract.svelte';
   // Are workers ready for new task, stored in store
-  import { images, ocrdImages, processed, ready } from './stores';
+  import { images, ocrdImages, processed, ready, work } from './stores';
   // The initial loading circle for Tesseract
   import Loader from './Loader.svelte';
   // Progress bar based off of worker progress (dispatched event progress)
@@ -20,13 +20,10 @@
   let processImageComponent;
 
   // Work responds to the worker progress being dispatched in './Tesseract.svelte'
-  const work = {
-    status: 'none',
-    progress: 0,
-  };
 
   // The resulting hocr object from tesseract OCRing an image
   const handleImagePaste = async (e: ClipboardEvent) => {
+    $ocrdImages = undefined;
     // Code inspired by https://www.techiedelight.com/paste-image-from-clipboard-using-javascript/
     // Get our clipboardImages as an array of blobs
     const raw = await getClipboardImageSources(e.clipboardData.items);
@@ -34,7 +31,7 @@
     const tempImages = await loadNewImages(raw);
     if (tempImages.length > 0) {
       // Have to garbage collect the dataToBlobURL
-      // Promise.resolve().then(() => destroyBlobURLs(images));
+      Promise.resolve().then(() => destroyBlobURLs($images));
       // We can update images with the link
       $images = tempImages;
       $processed = await processImageComponent.processImageAll(tempImages);
@@ -135,14 +132,15 @@
 <main on:paste={handleImagePaste}>
   {#if $ocrdImages}
     {#await $ocrdImages}
+      {@debug $ocrdImages}
       <div class="bigwrapper" transition:fly={{ y: 500, duration: 2000 }}>
-        <Progress bind:status={work.status} bind:progress={work.progress} />
+        <Progress bind:status={$work.status} bind:progress={$work.progress} />
       </div>
     {/await}
   {/if}
   <div class="wrapper">
     {#if !$ready}
-      <Loader bind:message={work.status} />
+      <Loader bind:message={$work.status} />
     {/if}
     {#each $images as image, i}
       <div class="imageWrapper" transition:fade|local>
@@ -164,10 +162,5 @@
       </div>
     {/each}
   </div>
-  <Tesseract
-    on:work={(event) => {
-      work.status = event.detail.status;
-      work.progress = event.detail.progress;
-    }} />
   <ProcessImage bind:this={processImageComponent} />
 </main>

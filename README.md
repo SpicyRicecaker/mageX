@@ -58,5 +58,4 @@ However, issues arise when some game cannot be hooked onto using textractor. The
 ## desired process
 - copy section of screen (using sharex)
 - paste straight into prompurr
-  - prompurr removes spaces
-- 
+- paste text into anki
