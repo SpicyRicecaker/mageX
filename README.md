@@ -16,62 +16,47 @@ However, issues arise when some game cannot be hooked onto using textractor. The
     - [ ] drag file
   - [x] change image processing settings 
     - [x] if text is white, must select corresponding option
-  - [ ] select desired block of text in image and enjoy!
+  - [x] select desired block of text in image and enjoy!
 
-## new features
-- [ ] fix new image not uploading after image is already there
-- [ ] mobile first options UI
-  - navbar with ||| menu on top
-    - OCR
-    - Processing
-  - when processing, overlay canvas on top of current image, then have a tap menu on the bottom (similar to the navbar) to change options
-- [ ] text bounding boxes
+## user experience (garbage rn)
+- Game Image
+  - ptscrn game
+- Cropped Translate
+  - alt+tab to paint
+  - ctrl+v to paint
+  - make sure fullscreen paste not half paste
+  - select select tool
+  - select section you want
+  - ctrl+c
+  - alt+tab to prompurr
+- Get Text
+  - paste into prompurr
+  - modify if needed
+  - select menu
+    - select options
+    - modify options as needed
+  - select menu
+    - select translate
+  - paste into prompurr
+  - copy text
+- Get Definitions
+  - paste into translate
+  - manually remove spaces (it hurtsss)
+  - copy hanzi you don't know the meaning of
+  - paste into online dictionary
+  - manually write text that isn't being translated
+  - copy hanzi again
+- Make Card
+  - alt+tab to anki
+  - paste into expressions
+  - generate readings
+  - alt+tab to game
+  - ptscrn
+  - alt+tab to anki
+  - paste into anki
 
-## implementation
-- !!For options UI
-  - Move Nav.svelte over from Lampest
-  - If view of Nav is processing (in processImage)
-    - Overlay canvas on top of other pic
-      - Make sure to edit dimensions using css
-      - While await canvas have loading
-    - Create Bot.svelte
-      - Nav except position is bottom
-      - Contains all image options
-      - Upon any modification, show three buttons
-        - Reprocess image (golden)
-          - Shifts view back into OCR (with fade in transition)
-          - Calls translate function again on the canvas
-        - Cancel all changes (x, red)
-        - Persist changes (purple cookies, lights up if different from current)
-    - Canvas is live edit, reacts to any user change
-- !For main 
-  - If past pref cookies is modified
-    - Load ProcessImage.svelte canvas
-    - ALWAYS Process based off of that 
-- Bounding boxes
-  - #Option 1
-    - Draw image onto canvas
-    - For textbox in textboxes
-      - ctx.drawRect
-      - onMouseMove
-        - for(all textboxes)
-          - if mouse.x > textboxes.left && mouse.x < textboxes.right
-          - && mouse.y > textboxes.bot && mouse.y < textboxes.top
-          - ctx.writeText(textboxes.text)
-    - Pros
-      - Relatively easy to implement
-      - Will easily scale up and down with canvas
-    - Cons
-      - Will have to image with canvas
-  - #Option 2
-    - Draw rects onto SVG BBBBBBBBBBB
-    - SVGs ARE OP WTF
-    - CAN DRAW DOM ELEMENTS STRAIGHT ONTO CANVAS WITH SPECIFIC DIMENSIONS, INCLUDING IMAGES AND RECTS
-    - CLEARLY THE WINNER HERE
-    - Ok actual implementation
-      - Slight refactoring of existing OCR to have image enclosed in svg
-      - $$$$Profit
-      - Ok actual actual implementation
-        - Watch video on svg html5
-        <!-- - Probably need to make an image component actuaylly. 
-        - inside svg, under image, call squares -->
+## desired process
+- copy section of screen (using sharex)
+- paste straight into prompurr
+  - prompurr removes spaces
+- 

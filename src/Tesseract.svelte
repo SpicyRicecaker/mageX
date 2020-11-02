@@ -9,9 +9,9 @@
     for (let i = 0; i < srcArray.length; ++i) {
       outArray.push((await worker.recognize(srcArray[i])).data);
     }
-    
+
     return await outArray;
-    
+
     // for (let i = 0; i < srcArray.length; ++i){
     //   outArray.push(worker.recognize(srcArray[i]))
     // }
@@ -55,10 +55,20 @@
           progress: m.progress,
         }),
     });
-
     await worker.load();
     await worker.loadLanguage($lang);
     await worker.initialize($lang);
+    // Remove spaces between words for chinese & japanese
+    switch ($lang) {
+      case 'chi_sim': // FALLTHROUGH
+      case 'jp': //FALLTHROUGH
+        await worker.setParameters({
+          preserve_interword_spaces: '1',
+        });
+        break;
+      default:
+        break;
+    }
     await ready.set(true);
   };
   export const changeWorkerLang = async () => {
